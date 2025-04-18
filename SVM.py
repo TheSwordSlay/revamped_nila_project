@@ -45,7 +45,7 @@ def SVM(df):
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Akurasi Model: {accuracy * 100:.2f}%")
     results_df = pd.DataFrame({
-        'content': test['Content'],
+        'preprocessed text': X_test,
         'sentiment': y_test,
         'prediction': y_pred
     })
