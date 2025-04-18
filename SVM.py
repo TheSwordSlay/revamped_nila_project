@@ -1,0 +1,52 @@
+from nltk.corpus import stopwords
+import string
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+import pickle
+from sentence_transformers import SentenceTransformer
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.metrics import accuracy_score
+import pandas as pd
+
+def SVM(df):
+    with open('svm_model.pkl', 'rb') as file:
+        svm_classifier = pickle.load(file)
+
+    # Initialize Indonesian stemmer
+    factory = StemmerFactory()
+    stemmer = factory.create_stemmer()
+
+    def preprocess_indonesian_text(text):
+        # Convert to lowercase
+        text = text.lower()
+        # Remove punctuation
+        text = text.translate(str.maketrans('', '', string.punctuation))
+        # Remove numbers
+        text = ''.join([char for char in text if not char.isdigit()])
+        # Stemming
+        text = stemmer.stem(text)
+        # Remove Indonesian stopwords
+        stop_words = set(stopwords.words('indonesian'))
+        words = text.split()
+        filtered_words = [word for word in words if word not in stop_words]
+        return ' '.join(filtered_words)
+
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    scaler = StandardScaler()
+
+    test = df
+
+    test['cleaned_text'] = test['Content'].apply(preprocess_indonesian_text)
+    X_test = test['cleaned_text']
+    y_test = test['Skor']
+
+    X_test_sentencetransformer = model.encode(X_test.tolist(), show_progress_bar=True)
+    X_test_sentencetransformer = scaler.fit_transform(X_test_sentencetransformer)
+    y_pred = svm_classifier.predict(X_test_sentencetransformer)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Akurasi Model: {accuracy * 100:.2f}%")
+    results_df = pd.DataFrame({
+        'content': test['Content'],
+        'sentiment': y_test,
+        'prediction': y_pred
+    })
+    return results_df, accuracy
