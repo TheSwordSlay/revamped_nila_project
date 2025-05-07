@@ -4,7 +4,14 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import pickle
 from sentence_transformers import SentenceTransformer
 from sklearn.discriminant_analysis import StandardScaler
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report
+)
 import pandas as pd
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 from functools import partial
@@ -57,10 +64,26 @@ def SVMmi(df):
     X_test_sentencetransformer = mi_selector.transform(X_test_sentencetransformer)
     y_pred = svm_selected.predict(X_test_sentencetransformer)
     accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='macro')
+    recall = recall_score(y_test, y_pred, average='macro')
+    f1 = f1_score(y_test, y_pred, average='macro')
+    cm = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred, output_dict=True)
+    
     print(f"Akurasi Model: {accuracy * 100:.2f}%")
     results_df = pd.DataFrame({
         'preprocessed text': X_test,
         'sentiment': y_test,
         'prediction': y_pred
     })
-    return results_df, accuracy
+    
+    metrics = {
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1,
+        'confusion_matrix': cm,
+        'class_report': class_report
+    }
+    
+    return results_df, metrics

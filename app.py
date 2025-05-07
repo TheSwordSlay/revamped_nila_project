@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from SVM import SVM
 from SVMMi import SVMmi
+import plotly.express as px
 
 st.set_page_config(page_title="Sentiment Analysis App", layout="wide")
 
@@ -26,6 +27,14 @@ method = st.radio(
     horizontal=True
 )
 
+@st.cache_data
+def returnSVM(df):
+    return SVM(df)
+
+@st.cache_data
+def returnSVMMI(df):
+    return SVMmi(df)
+
 if uploaded_file is not None:
     try:
         # Read file based on extension
@@ -41,19 +50,32 @@ if uploaded_file is not None:
             # Process based on selected method
             with st.spinner('Processing...'):
                 if method == "SVM":
-                    results_df, accuracy = SVM(df)
+                    results_df, metrics = returnSVM(df)
                 else:
-                    results_df, accuracy = SVMmi(df)
+                    results_df, metrics = returnSVMMI(df)
 
             # Display results
             st.success("Processing complete!")
             st.subheader("Results")
             
-            col1, col2 = st.columns([3, 1])
+            col1, col2 = st.columns([3, 2])
             with col1:
                 st.dataframe(results_df, use_container_width=True)
             with col2:
-                st.metric("Accuracy", f"{accuracy:.2%}")
+                st.subheader("Performance Metrics")
+                st.metric("Accuracy", f"{metrics['accuracy']:.2%}")
+                st.metric("Precision", f"{metrics['precision']:.2%}")
+                st.metric("Recall", f"{metrics['recall']:.2%}")
+                st.metric("F1-Score", f"{metrics['f1']:.2%}")
+            
+            st.subheader("Confusion Matrix")
+            fig = px.imshow(
+                metrics['confusion_matrix'],
+                labels=dict(x="Predicted", y="Actual"),
+                text_auto=True,
+                color_continuous_scale='Blues'
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
