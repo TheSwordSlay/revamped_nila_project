@@ -3,6 +3,15 @@ import pandas as pd
 from SVM import SVM
 from SVMMi import SVMmi
 import plotly.express as px
+import nltk
+try:
+    nltk.download('stopwords')  # For English stopwords
+    nltk.download('punkt')  # Required for some NLTK operations
+    # Verify Indonesian stopwords are available
+    if 'indonesian' not in nltk.corpus.stopwords.fileids():
+        st.error("Indonesian stopwords not found in NLTK. Using English stopwords instead.")
+except Exception as e:
+    st.error(f"Failed to download NLTK data: {str(e)}")
 
 st.set_page_config(page_title="Sentiment Analysis App", layout="wide")
 
