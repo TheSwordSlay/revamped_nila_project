@@ -16,10 +16,9 @@ except Exception as e:
 st.set_page_config(page_title="Sentiment Analysis App", layout="wide")
 
 # App title and description
-st.title("Sentiment Analysis with SVM")
+st.title("ANALISI SENTIMEN E-COMMERCE ULASAN SHOPEE TERKAIT FITUR COD")
 st.markdown("""
-Upload your Excel/CSV file and choose processing method.
-The file should contain 'Content' and 'Skor' columns.
+Menggunakan Metode SVM dan Seleksi Fitur Mutual Information
 """)
 
 # File upload section
@@ -31,8 +30,8 @@ uploaded_file = st.file_uploader(
 
 # Method selection
 method = st.radio(
-    "Select processing method:",
-    ("SVM", "SVM with Mutual Information"),
+    "Pilih Model Training:",
+    ("SVM", "SVM + Mutual Information"),
     horizontal=True
 )
 
@@ -64,7 +63,7 @@ if uploaded_file is not None:
                     results_df, metrics = returnSVMMI(df)
 
             # Display results
-            st.success("Processing complete!")
+            st.success("Processing berhasil!")
             st.subheader("Results")
             
             col1, col2 = st.columns([3, 2])
